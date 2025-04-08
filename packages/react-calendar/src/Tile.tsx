@@ -72,6 +72,9 @@ type TileProps = {
    * @example 'year'
    */
   view: View;
+  onMouseDown?: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseEnter?: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseUp?: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 export default function Tile(props: TileProps): React.ReactElement {
@@ -93,7 +96,11 @@ export default function Tile(props: TileProps): React.ReactElement {
     tileContent: tileContentProps,
     tileDisabled,
     view,
+    onMouseDown,
+    onMouseEnter,
+    onMouseUp
   } = props;
+
 
   const tileClassName = useMemo(() => {
     const args = { activeStartDate, date, view };
@@ -118,6 +125,9 @@ export default function Tile(props: TileProps): React.ReactElement {
       onClick={onClick ? (event) => onClick(date, event) : undefined}
       onFocus={onMouseOver ? () => onMouseOver(date) : undefined}
       onMouseOver={onMouseOver ? () => onMouseOver(date) : undefined}
+      onMouseDown={props.onMouseDown ? (event) => props.onMouseDown!(date, event) : undefined}
+      onMouseEnter={props.onMouseEnter ? (event) => props.onMouseEnter!(date, event) : undefined}
+      onMouseUp={props.onMouseUp ? (event) => props.onMouseUp!(date, event) : undefined}
       style={style}
       type="button"
     >

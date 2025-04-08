@@ -152,3 +152,8 @@ body {
 .Test__container__content > p {
   text-align: center;
 }
+
+.drag-selected {
+  background-color: rgba(100, 149, 237, 0.4);
+  border-radius: 50%;
+}

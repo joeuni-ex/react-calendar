@@ -87,6 +87,9 @@ export default function Test() {
   const [showWeekNumbers, setShowWeekNumbers] = useState(false);
   const [value, setValue] = useState<LooseValue>(now);
   const [view, setView] = useState<View>('month');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartDate, setDragStartDate] = useState<Date | null>(null);
+  const [dragDates, setDragDates] = useState<Date[]>([]);
 
   const onViewOrDateChange = useCallback(
     ({
@@ -118,6 +121,48 @@ export default function Test() {
     return <p>{`Chosen date: ${value ? renderDate(value) : '(none)'}`}</p>;
   }
 
+    // 드래그 이벤트 핸들러
+    const handleMouseDown = (date: Date) => {
+      console.log('MouseDown on', date);
+      setIsDragging(true);
+      setDragStartDate(date);
+      setDragDates([date]);
+    };
+
+    const handleMouseEnter = (date: Date) => {
+      if (!isDragging || !dragStartDate) return;
+      const newDates = getDatesBetween(dragStartDate, date);
+      console.log('Dragging over:', date, 'Current dragDates:', newDates);
+      setDragDates(newDates);
+    };
+
+    const handleMouseUp = () => {
+      console.log('MouseUp, final dragDates:', dragDates);
+      if (dragDates.length > 0) {
+        const selected = selectRange
+          ? [dragDates[0], dragDates[dragDates.length - 1]]
+          : dragDates[0];
+        // setValue(selected);
+        console.log('Selected value:', selected);
+      }
+      setIsDragging(false);
+      setDragStartDate(null);
+      setDragDates([]);
+    };
+
+    // 타일 스타일 설정: 드래그 중 선택된 타일에 스타일 적용
+    const tileClassName = ({ date, view }: { date: Date; view: View }) => {
+      if (view === 'month') {
+        const isSelected = dragDates.some(
+          (d) => d.toDateString() === date.toDateString(),
+        );
+        // 드래그 날짜가 있다면 우선 해당 클래스를 추가
+        if (isSelected) return 'drag-selected';
+        // 기본적으로 주말이면 빨간색으로 표시
+        return date.getDay() === 0 || date.getDay() === 6 ? 'red' : null;
+      }
+      return null;
+    };
   const commonProps = {
     className: 'myCustomCalendarClassName',
     locale,
@@ -159,8 +204,27 @@ export default function Test() {
     showWeekNumbers,
     tileClassName,
     tileContent,
+    onMouseDown: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => handleMouseDown(date),
+    onMouseEnter: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => handleMouseEnter(date),
+    onMouseUp: (date: Date, event: React.MouseEvent<HTMLButtonElement>) => handleMouseUp(),
   };
+  function getDatesBetween(start: Date, end: Date): Date[] {
+    const dates: Date[] = [];
+    const cur = new Date(start);
+    const target = new Date(end);
+    const step = start <= end ? 1 : -1;
+  
+    while (true) {
+      dates.push(new Date(cur));
+      if (cur.toDateString() === target.toDateString()) break;
+      cur.setDate(cur.getDate() + step);
+    }
+  
+    return dates;
+  }
 
+
+  console.log("value",value)
   return (
     <div className="Test">
       <header>
